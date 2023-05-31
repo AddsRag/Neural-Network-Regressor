@@ -1,0 +1,201 @@
+<html>
+<head>
+<title>Neural Network Regressor</title>
+<style>
+table {
+	border: 1px solid black;
+	border-collapse: collapse;
+	width: 40%
+}
+
+th, td {
+	border: 1px solid black;
+	padding: 8px;
+	width: 100%;
+}
+
+</style>
+
+
+</head>
+<body>
+<h1>Neural Network Maker</h1>
+
+<p>By submitting a file, locally create several neural networks with no code using the brain.js library, and select the one best optimized to your needs.</p>
+<u>Train model</u><br />
+<p>Please upload your CSV in the following format without any commas within your data. Please also indicate how many different models you wish to create.</p>
+<table style = "border:1px black">
+	<tr>
+		<th>Dependent Variable</th>
+		<th>Independent Variable 1</th>
+		<th>Independent Variable 2</th>
+		<th>Independent Variable 3</th>
+	</tr>
+	
+	<tr>
+		<td>1</td>
+		<td>0</td>
+		<td>1</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>0</td>
+		<td>1</td>
+		<td>1</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>0</td>
+		<td>1</td>
+		<td>1</td>
+	</tr>
+	
+</table>
+
+
+
+<script src="https://unpkg.com/brain.js"></script>
+<script>
+	var file_contents = "";
+	var file_contents_rows = [];
+	var function_run;
+	var models = [];
+	var table_statistics_cells = [];
+	function parse_file(event) {
+		event.preventDefault();
+		var num_models = document.getElementById("num_models").value;
+		num_models = parseInt(num_models);
+		const dataset = document.getElementById("dataset").files[0];
+		const reader = new FileReader();
+		var training_entries = [];
+		reader.onload = (a) => {
+			file_contents = a.target.result;
+			file_contents_rows = file_contents.replace(/\r/g, "").split("\n");
+			console.log(file_contents_rows);
+			
+			
+			// start at second row and iterate through
+			for (let x = 1; x < file_contents_rows.length-1; x++) {
+				var split_row = file_contents_rows[x].split(",");
+				var current_output = 0;
+				var current_input = [];
+				var training_entry = { input: "", output: "" };
+				for (let y = 0; y < split_row.length; y++) {
+					if (y === 0) {
+						current_output = split_row[0].toString();
+					}
+					else {
+						current_input.push(parseInt(split_row[y]));
+					}
+				}
+				training_entry.input = current_input;
+				output_dictionary = {}
+				output_dictionary[current_output.toString()] = 1;
+				training_entry.output = output_dictionary
+				training_entries.push(training_entry);
+			}
+			console.log(training_entries);
+			train_start(training_entries, num_models);
+		};
+
+		reader.readAsText(dataset);
+		
+		
+	}
+	function train_start(training_entries, num_models) {
+		for (let x = 0; x < num_models; x++) {
+			const net = new brain.NeuralNetwork();
+			net.train(training_entries);
+			function_run = net.toFunction();
+			console.log(function_run);
+			models.push(function_run);
+		}
+		make_model_table(num_models);
+	}
+	function make_model_table(num_models) {
+		var model_table = document.getElementById("model_table");
+			
+		for (let y = 0; y < num_models; y++) {
+			console.log(y);
+			var row = model_table.insertRow(1);
+			var cell1 = row.insertCell(0);
+			var cell2 = row.insertCell(1);
+			var cell3 = row.insertCell(2);
+			table_statistics_cells.push(cell3);
+			
+			cell1.innerHTML = y.toString();
+			cell2.innerHTML = models[y].toString();
+			cell3.innerHTML = " ";
+		}
+	}
+	
+</script>
+<br />
+<br />
+<u>Training</u>
+Please Upload a Dataset to Train From (Required): 
+<input type="file" id="dataset">
+<form id = "num_models_form">
+	Number of models (choose 1 by default):
+	<input type = "text" id = "num_models" required>
+	<button onclick="parse_file(event)" id="upload_button">Upload File and Begin Training</button>
+</form>
+
+<u>Testing (Optional)</u>
+<p>You can upload a dataset to test with after you train your model. After you do upload a dataset to test with, the test statistics will be displayed in the table bellow alongside your trained models</p>
+<div id = "models">
+<table id = "model_table">
+<script>
+var model_table = document.getElementById("model_table");
+header_row = model_table.insertRow(0);
+var header1 = header_row.insertCell(0);
+var header2 = header_row.insertCell(1);
+var header3 = header_row.insertCell(2);
+header1.innerHTML = "<b>Model #</b>";
+header2.innerHTML = "<b>Javascript Code</b>";
+header3.innerHTML = "<b>Test Statistics</b>";
+</script>
+
+</table>
+</div>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<u>Coming Soon</u><br />
+<p>
+- Value-based regression (as opposed to just classification) <br />
+- Working testing system (e.g. false positive rate for classifications, and R2 for value-based regression)
+</p>
+<br />
+<u>About this Project</u>
+<p>
+This tool was created by Adhitya Raghavan as a learning project with the aid of generative AI for quick implementation of style and code fixes for this project.
+This tool in its current form is a prototype with plans for improvement.
+</p>
+
+<br />
+<u>Terms of Use</u><br />
+By using this software, you agree to these terms of use, along with any licenses used by affiliated programs. Terms of Use may change over time and are effective immediately (or as soon as possible per applicable laws), please regularly review them. The brain.js library is licensed under the MIT license found here: https://opensource.org/license/mit/
+<br />
+<br />
+
+<i>Limitation of Liability</i>
+<p>
+INDIVIDUALS SHALL NOT HOLD THE CREATOR(S) OF THIS TOOL LIABLE IN ANY MANNER. SHOULD THE PROGRAM BE DEFFECTIVE, CREATOR(S) SHALL NOT BE HELD LIABLE FOR DAMAGES THAT MAY ARRISE AS A RESULT, TO THE MAXIMUM EXTENT PERMITTED UNDER THE LAW.
+</p>
+
+<i>Disclaimer of Lack of Warranty</i>
+<p>
+THIS TOOL IS PROVIDED "AS-IS," WITHOUT ANY WARRANTIES, TO THE MAXIMUM EXTENT APPLICABLE UNDER THE LAW.
+</p>
+
+</body>
+
+</html>
